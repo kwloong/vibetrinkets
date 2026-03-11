@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Vibe Coded Trinkets — a collection of small fun, useful stuff">
+  <title>Vibe Coded Trinkets</title>
+  <style>
+    /* ── Reset ─────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── Design tokens ──────────────────────────────────────── */
+    :root {
+      --bg:           #f0f7f0;
+      --surface:      #ffffff;
+      --primary:      #4a9e5c;
+      --primary-dk:   #367a44;
+      --primary-lt:   #d0ead2;
+      --accent:       #a5d6a7;
+      --text:         #152c1e;
+      --text-2:       #3b6148;
+      --border:       #b6d9b8;
+      --shadow:       rgba(74, 158, 92, 0.12);
+      --radius:       10px;
+      --radius-sm:    6px;
+      --transition:   0.22s ease;
+    }
+
+    /* ── Base ───────────────────────────────────────────────── */
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui,
+                   'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.65;
+    }
+
+    /* ── Header ─────────────────────────────────────────────── */
+    .site-header {
+      text-align: center;
+      padding: 3rem 1.5rem 2.25rem;
+      background: linear-gradient(180deg, #e8f5e9 0%, var(--bg) 100%);
+      border-bottom: 1.5px solid var(--border);
+    }
+
+    .header-art {
+      display: block;
+      width: 100%;
+      max-width: 560px;
+      height: auto;
+      margin: 0 auto 1.4rem;
+      opacity: 0.9;
+    }
+
+    .site-title {
+      font-size: clamp(1.9rem, 5.5vw, 3.2rem);
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      color: var(--text);
+      line-height: 1.1;
+    }
+
+    .site-tagline {
+      margin-top: 0.55rem;
+      font-size: clamp(0.88rem, 2.2vw, 1.05rem);
+      color: var(--text-2);
+      font-style: italic;
+      letter-spacing: 0.01em;
+    }
+
+    /* ── Container ──────────────────────────────────────────── */
+    .container {
+      max-width: 740px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 3rem;
+    }
+
+    /* ── Section label ──────────────────────────────────────── */
+    .section-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-2);
+      margin-bottom: 1rem;
+      padding-left: 0.15rem;
+      opacity: 0.8;
+    }
+
+    /* ── Link list ──────────────────────────────────────────── */
+    .link-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+    }
+
+    .link-item {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: box-shadow var(--transition), border-color var(--transition);
+    }
+
+    .link-item:hover {
+      border-color: var(--primary);
+      box-shadow: 0 3px 14px var(--shadow);
+    }
+
+    /* ── Link row ───────────────────────────────────────────── */
+    .link-row {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding: 0.8rem 1rem;
+    }
+
+    /* ── Toggle button ──────────────────────────────────────── */
+    .toggle-btn {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--accent);
+      background: var(--primary-lt);
+      color: var(--primary-dk);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background var(--transition);
+      padding: 0;
+    }
+
+    .toggle-btn:hover { background: var(--accent); }
+    .toggle-btn:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
+    .toggle-icon {
+      display: block;
+      transition: transform var(--transition);
+      pointer-events: none;
+    }
+
+    .link-item.open .toggle-icon { transform: rotate(90deg); }
+
+    /* ── Link title & meta ──────────────────────────────────── */
+    .link-meta {
+      display: flex;
+      align-items: baseline;
+      gap: 0.55rem;
+      flex: 1;
+      min-width: 0;
+      flex-wrap: wrap;
+    }
+
+    .link-meta a {
+      font-weight: 600;
+      font-size: 0.98rem;
+      color: var(--text);
+      text-decoration: none;
+      transition: color var(--transition);
+    }
+
+    .link-meta a:hover { color: var(--primary-dk); text-decoration: underline; }
+
+    .link-tag {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.15em 0.55em;
+      border-radius: 4px;
+      background: var(--primary-lt);
+      color: var(--primary-dk);
+      white-space: nowrap;
+      line-height: 1.5;
+    }
+
+    /* ── Expandable details ─────────────────────────────────── */
+    .link-details {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows var(--transition);
+    }
+
+    .link-item.open .link-details { grid-template-rows: 1fr; }
+
+    .link-details-inner {
+      overflow: hidden;
+      border-top: 1px solid var(--primary-lt);
+      padding: 0 1rem 0 3.2rem;
+      max-height: 0;            /* for browsers without grid animation support */
+      transition: max-height 0.28s ease, padding-top 0.22s, padding-bottom 0.22s;
+    }
+
+    .link-item.open .link-details-inner {
+      padding-top: 0.7rem;
+      padding-bottom: 0.85rem;
+      max-height: 600px;
+    }
+
+    .link-details-inner p {
+      font-size: 0.91rem;
+      color: var(--text-2);
+      line-height: 1.72;
+    }
+
+    /* ── Back to top ────────────────────────────────────────── */
+    #back-to-top {
+      display: none;
+      text-align: center;
+      padding: 1.5rem 0 0.25rem;
+    }
+
+    #back-to-top.visible { display: block; }
+
+    #back-to-top a {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4em;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-2);
+      text-decoration: none;
+      padding: 0.5em 1.3em;
+      border-radius: 999px;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      transition: background var(--transition), border-color var(--transition),
+                  color var(--transition);
+    }
+
+    #back-to-top a:hover {
+      background: var(--primary-lt);
+      border-color: var(--primary);
+      color: var(--primary-dk);
+    }
+
+    /* ── About / description box ────────────────────────────── */
+    .about-box {
+      margin-top: 2.5rem;
+      padding: 1.6rem 1.75rem;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-left: 4px solid var(--primary);
+      border-radius: var(--radius);
+    }
+
+    .about-box h2 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.45em;
+    }
+
+    .about-box p {
+      font-size: 0.93rem;
+      color: var(--text-2);
+      line-height: 1.78;
+    }
+
+    .about-box p + p { margin-top: 0.8em; }
+
+    /* ── Footer ─────────────────────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 1.75rem 1.5rem;
+      font-size: 0.8rem;
+      color: var(--text-2);
+      opacity: 0.65;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Responsive ─────────────────────────────────────────── */
+    @media (max-width: 520px) {
+      .site-header { padding: 2rem 1rem 1.75rem; }
+      .container { padding: 1.5rem 0.9rem 2.5rem; }
+      .link-row { padding: 0.7rem 0.75rem; gap: 0.55rem; }
+      .link-details-inner { padding-left: 2.8rem; }
+      .about-box { padding: 1.2rem 1.1rem; }
+    }
+  </style>
+</head>
+<body id="top">
+
+  <header class="site-header">
+    <img class="header-art"
+         src="header.svg"
+         alt="Decorative botanical illustration with leaves and flowers"
+         width="560" height="168"
+         loading="eager">
+    <h1 class="site-title">Vibe Coded Trinkets</h1>
+    <p class="site-tagline">Small fun, useful stuff</p>
+  </header>
+
+  <main>
+    <div class="container">
+
+      <p class="section-label" aria-hidden="true">Projects &amp; Links</p>
+
+      <!--
+        ════════════════════════════════════════════════════════
+        HAND-EDIT THIS SECTION
+        ────────────────────────────────────────────────────────
+        Each <li class="link-item"> contains:
+          • <a href="…">Link Title</a>  ← change URL and name
+          • <span class="link-tag">…</span>  ← optional category tag
+          • <p> inside .link-details-inner  ← longer description
+
+        To ADD a link: copy any <li>…</li> block and paste it.
+        To REMOVE a link: delete the whole <li>…</li> block.
+        ════════════════════════════════════════════════════════
+      -->
+      <ul class="link-list" id="link-list">
+
+        <li class="link-item">
+          <div class="link-row">
+            <button class="toggle-btn" aria-expanded="false" aria-label="Toggle description">
+              <svg class="toggle-icon" width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+                <path d="M2.5 1.5 L7.5 5 L2.5 8.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <div class="link-meta">
+              <a href="https://kwloong.github.io/vibetrinkets/geosketch.html" target="_blank" rel="noopener noreferrer">GeoSketch</a>
+            </div>
+          </div>
+          <div class="link-details" role="region">
+            <div class="link-details-inner">
+              <p>Simple single html map plotter for quick annotation of maps. Uses leaflet.js and OpenStreetMap.</p>
+            </div>
+          </div>
+        </li>
+
+        
+        <li class="link-item">
+          <div class="link-row">
+            <button class="toggle-btn" aria-expanded="false" aria-label="Toggle description">
+              <svg class="toggle-icon" width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+                <path d="M2.5 1.5 L7.5 5 L2.5 8.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <div class="link-meta">
+              <a href="https://example.com/example" target="_blank" rel="noopener noreferrer">Example</a>
+              <span class="link-tag">Example</span>
+            </div>
+          </div>
+          <div class="link-details" role="region">
+            <div class="link-details-inner">
+              <p>Example</p>
+            </div>
+          </div>
+        </li>
+
+
+
+
+      </ul>
+      <!-- ── END HAND-EDIT SECTION ── -->
+
+      <nav id="back-to-top" aria-label="Return to top of page">
+        <a href="#top">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+            <path d="M6.5 10.5V2.5M2.5 6.5L6.5 2.5L10.5 6.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Back to top
+        </a>
+      </nav>
+
+      <section class="about-box" aria-label="About Vibe Coded Trinkets">
+        <h2>
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+            <circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M7.5 6.5v4.5M7.5 4.5v.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          About this site
+        </h2>
+        <p>
+          Vibe Coded Trinkets is a collection of useful and/or fun things built quickly with the help of AI.
+        </p>
+        <p>
+          Use or enjoy at your own peril.
+        </p>
+      </section>
+
+    </div>
+  </main>
+
+  <footer>
+    <p>Vibe Coded Trinkets &mdash; made with curiosity &amp; caffeine</p>
+  </footer>
+
+  <script>
+    (function () {
+      'use strict';
+
+      /* ── Toggle link details ──────────────────────────────── */
+      document.querySelectorAll('.toggle-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var item = btn.closest('.link-item');
+          var opening = !item.classList.contains('open');
+          item.classList.toggle('open', opening);
+          btn.setAttribute('aria-expanded', String(opening));
+        });
+      });
+
+      /* ── Back-to-top: show only when page exceeds viewport ── */
+      var backToTop = document.getElementById('back-to-top');
+
+      function syncBackToTop() {
+        var taller = document.documentElement.scrollHeight > window.innerHeight * 1.05;
+        backToTop.classList.toggle('visible', taller);
+      }
+
+      syncBackToTop();
+
+      /* Re-check when expansions change page height */
+      document.querySelectorAll('.toggle-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          /* small delay so the animation has started */
+          setTimeout(syncBackToTop, 50);
+        });
+      });
+
+      window.addEventListener('resize', syncBackToTop);
+    })();
+  </script>
+</body>
+</html>

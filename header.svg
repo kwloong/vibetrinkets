@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 180" width="600" height="180" role="img" aria-label="Decorative botanical illustration">
+  <!-- Left botanical cluster -->
+  <path d="M 72 178 C 70 150 74 110 66 42" stroke="#4a9e5c" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Leaves left -->
+  <ellipse cx="50" cy="152" rx="21" ry="9.5" transform="rotate(-42 50 152)" fill="#a5d6a7" opacity="0.88"/>
+  <ellipse cx="86" cy="116" rx="23" ry="9" transform="rotate(32 86 116)" fill="#c8e6c9" opacity="0.9"/>
+  <ellipse cx="54" cy="78" rx="19" ry="8.5" transform="rotate(-28 54 78)" fill="#a5d6a7" opacity="0.85"/>
+  <ellipse cx="68" cy="46" rx="12" ry="5.5" transform="rotate(10 68 46)" fill="#c8e6c9" opacity="0.8"/>
+  <!-- Small side branch left -->
+  <path d="M 68 134 Q 44 122 30 110" stroke="#4a9e5c" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <ellipse cx="26" cy="107" rx="13" ry="5.5" transform="rotate(-22 26 107)" fill="#c8e6c9" opacity="0.8"/>
+  <!-- Extra leaf left-low -->
+  <path d="M 69 158 Q 48 158 36 152" stroke="#4a9e5c" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <ellipse cx="32" cy="150" rx="10" ry="4.5" transform="rotate(-15 32 150)" fill="#a5d6a7" opacity="0.75"/>
+
+  <!-- Right botanical cluster (mirrored) -->
+  <path d="M 528 178 C 530 150 526 110 534 42" stroke="#4a9e5c" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Leaves right -->
+  <ellipse cx="550" cy="152" rx="21" ry="9.5" transform="rotate(42 550 152)" fill="#a5d6a7" opacity="0.88"/>
+  <ellipse cx="514" cy="116" rx="23" ry="9" transform="rotate(-32 514 116)" fill="#c8e6c9" opacity="0.9"/>
+  <ellipse cx="546" cy="78" rx="19" ry="8.5" transform="rotate(28 546 78)" fill="#a5d6a7" opacity="0.85"/>
+  <ellipse cx="532" cy="46" rx="12" ry="5.5" transform="rotate(-10 532 46)" fill="#c8e6c9" opacity="0.8"/>
+  <!-- Small side branch right -->
+  <path d="M 532 134 Q 556 122 570 110" stroke="#4a9e5c" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <ellipse cx="574" cy="107" rx="13" ry="5.5" transform="rotate(22 574 107)" fill="#c8e6c9" opacity="0.8"/>
+  <!-- Extra leaf right-low -->
+  <path d="M 531 158 Q 552 158 564 152" stroke="#4a9e5c" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <ellipse cx="568" cy="150" rx="10" ry="4.5" transform="rotate(15 568 150)" fill="#a5d6a7" opacity="0.75"/>
+
+  <!-- Center horizontal vine -->
+  <path d="M 148 98 Q 210 82 300 92 Q 390 102 452 86" stroke="#a5d6a7" stroke-width="1.5" fill="none" stroke-dasharray="5,7" opacity="0.65"/>
+
+  <!-- Small sprigs along center vine -->
+  <path d="M 192 93 Q 196 78 200 71" stroke="#81c784" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+  <ellipse cx="201" cy="68" rx="7.5" ry="4" transform="rotate(-22 201 68)" fill="#b2dfb4" opacity="0.85"/>
+  <path d="M 201 72 Q 207 63 214 60" stroke="#81c784" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+  <ellipse cx="216" cy="58" rx="6" ry="3" transform="rotate(20 216 58)" fill="#c8e6c9" opacity="0.8"/>
+
+  <path d="M 288 90 Q 292 74 296 67" stroke="#81c784" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+  <ellipse cx="297" cy="64" rx="7.5" ry="4" transform="rotate(18 297 64)" fill="#b2dfb4" opacity="0.85"/>
+
+  <path d="M 382 95 Q 379 79 376 71" stroke="#81c784" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+  <ellipse cx="375" cy="68" rx="7.5" ry="4" transform="rotate(-12 375 68)" fill="#b2dfb4" opacity="0.85"/>
+  <path d="M 376 72 Q 369 63 362 60" stroke="#81c784" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+  <ellipse cx="360" cy="58" rx="6" ry="3" transform="rotate(-20 360 58)" fill="#c8e6c9" opacity="0.8"/>
+
+  <!-- 4-petal flower, left of center -->
+  <g transform="translate(242 132)">
+    <circle cx="0" cy="-7.5" r="5.5" fill="#c8e6c9" opacity="0.75"/>
+    <circle cx="7.5" cy="0" r="5.5" fill="#c8e6c9" opacity="0.75"/>
+    <circle cx="0" cy="7.5" r="5.5" fill="#c8e6c9" opacity="0.75"/>
+    <circle cx="-7.5" cy="0" r="5.5" fill="#c8e6c9" opacity="0.75"/>
+    <circle cx="0" cy="0" r="4.5" fill="#a5d6a7"/>
+    <circle cx="0" cy="0" r="2" fill="#81c784"/>
+  </g>
+  <!-- Stem for left flower -->
+  <line x1="242" y1="148" x2="242" y2="162" stroke="#4a9e5c" stroke-width="1.3" stroke-linecap="round"/>
+
+  <!-- 4-petal flower, right of center -->
+  <g transform="translate(358 122)">
+    <circle cx="0" cy="-7" r="5" fill="#c8e6c9" opacity="0.75"/>
+    <circle cx="7" cy="0" r="5" fill="#c8e6c9" opacity="0.75"/>
+    <circle cx="0" cy="7" r="5" fill="#c8e6c9" opacity="0.75"/>
+    <circle cx="-7" cy="0" r="5" fill="#c8e6c9" opacity="0.75"/>
+    <circle cx="0" cy="0" r="4" fill="#a5d6a7"/>
+    <circle cx="0" cy="0" r="1.8" fill="#81c784"/>
+  </g>
+  <line x1="358" y1="136" x2="358" y2="155" stroke="#4a9e5c" stroke-width="1.3" stroke-linecap="round"/>
+
+  <!-- Center star/sparkle -->
+  <g transform="translate(300 38)" opacity="0.65">
+    <line x1="0" y1="-9" x2="0" y2="9" stroke="#81c784" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="-9" y1="0" x2="9" y2="0" stroke="#81c784" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="-6.4" y1="-6.4" x2="6.4" y2="6.4" stroke="#81c784" stroke-width="1.1" stroke-linecap="round" opacity="0.7"/>
+    <line x1="6.4" y1="-6.4" x2="-6.4" y2="6.4" stroke="#81c784" stroke-width="1.1" stroke-linecap="round" opacity="0.7"/>
+    <circle cx="0" cy="0" r="2.5" fill="#a5d6a7"/>
+  </g>
+
+  <!-- Small sparkles scattered -->
+  <g transform="translate(158 52)" opacity="0.55">
+    <line x1="0" y1="-5" x2="0" y2="5" stroke="#4a9e5c" stroke-width="1.3" stroke-linecap="round"/>
+    <line x1="-5" y1="0" x2="5" y2="0" stroke="#4a9e5c" stroke-width="1.3" stroke-linecap="round"/>
+  </g>
+  <g transform="translate(442 52)" opacity="0.55">
+    <line x1="0" y1="-5" x2="0" y2="5" stroke="#4a9e5c" stroke-width="1.3" stroke-linecap="round"/>
+    <line x1="-5" y1="0" x2="5" y2="0" stroke="#4a9e5c" stroke-width="1.3" stroke-linecap="round"/>
+  </g>
+  <g transform="translate(175 148)" opacity="0.4">
+    <line x1="0" y1="-4" x2="0" y2="4" stroke="#4a9e5c" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="-4" y1="0" x2="4" y2="0" stroke="#4a9e5c" stroke-width="1.2" stroke-linecap="round"/>
+  </g>
+  <g transform="translate(424 148)" opacity="0.4">
+    <line x1="0" y1="-4" x2="0" y2="4" stroke="#4a9e5c" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="-4" y1="0" x2="4" y2="0" stroke="#4a9e5c" stroke-width="1.2" stroke-linecap="round"/>
+  </g>
+
+  <!-- Floating dots -->
+  <circle cx="222" cy="145" r="3" fill="#81c784" opacity="0.45"/>
+  <circle cx="320" cy="155" r="2.5" fill="#a5d6a7" opacity="0.5"/>
+  <circle cx="278" cy="50" r="2" fill="#4a9e5c" opacity="0.35"/>
+  <circle cx="415" cy="142" r="3.5" fill="#b2dfb4" opacity="0.5"/>
+  <circle cx="170" cy="100" r="2.5" fill="#81c784" opacity="0.35"/>
+  <circle cx="430" cy="100" r="2.5" fill="#81c784" opacity="0.35"/>
+</svg>
