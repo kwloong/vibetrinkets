@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Walk Test Map View</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0d1117;
+      color: #c9d1d9;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    header {
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+    header h1 { font-size: 15px; font-weight: 600; color: #58a6ff; letter-spacing: 0.3px; }
+    #header-file { font-size: 12px; color: #8b949e; margin-left: auto; }
+    #header-status { font-size: 12px; color: #3fb950; }
+
+    /* ── Main layout ── */
+    .app-body { flex: 1; display: flex; overflow: hidden; position: relative; }
+
+    /* ── Upload screen ── */
+    #upload-screen {
+      position: absolute; inset: 0;
+      background: #0d1117;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 500;
+    }
+    .upload-card {
+      border: 2px dashed #30363d;
+      border-radius: 16px;
+      padding: 64px 80px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      max-width: 480px;
+    }
+    .upload-card:hover, .upload-card.drag-over {
+      border-color: #58a6ff;
+      background: rgba(88, 166, 255, 0.06);
+    }
+    .upload-icon { font-size: 48px; line-height: 1; margin-bottom: 20px; }
+    .upload-card h2 { font-size: 20px; font-weight: 600; color: #e6edf3; margin-bottom: 8px; }
+    .upload-card p { font-size: 13px; color: #8b949e; line-height: 1.6; }
+    #file-input { display: none; }
+    .upload-hint {
+      margin-top: 16px;
+      font-size: 11px;
+      color: #484f58;
+      background: #161b22;
+      border-radius: 6px;
+      padding: 8px 12px;
+    }
+
+    /* ── Map ── */
+    #map { flex: 1; min-width: 0; }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      width: 300px;
+      flex-shrink: 0;
+      background: #161b22;
+      border-left: 1px solid #30363d;
+      overflow-y: auto;
+      display: none;
+      flex-direction: column;
+    }
+    #sidebar.open { display: flex; }
+
+    .sb-section {
+      padding: 14px 16px;
+      border-bottom: 1px solid #21262d;
+    }
+    .sb-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: #58a6ff;
+      margin-bottom: 10px;
+    }
+
+    /* file info */
+    .info-pill {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 12px;
+      color: #8b949e;
+      line-height: 1.7;
+    }
+    .info-pill .hl { color: #e6edf3; font-weight: 500; }
+
+    /* stats grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .stat-cell {
+      background: #0d1117;
+      border: 1px solid #21262d;
+      border-radius: 6px;
+      padding: 8px 10px;
+    }
+    .stat-cell .slabel { font-size: 10px; color: #484f58; text-transform: uppercase; letter-spacing: 0.4px; }
+    .stat-cell .svalue { font-size: 14px; font-weight: 600; color: #e6edf3; margin-top: 2px; }
+
+    /* color ranges */
+    .range-row {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: #0d1117;
+      border: 1px solid #21262d;
+      border-radius: 6px;
+      padding: 5px 7px;
+      margin-bottom: 5px;
+    }
+    .range-row input[type="color"] {
+      width: 28px; height: 24px;
+      border: 1px solid #30363d; border-radius: 4px;
+      cursor: pointer; padding: 1px; background: #161b22;
+      flex-shrink: 0;
+    }
+    .range-row input[type="number"] {
+      width: 62px;
+      background: #161b22; border: 1px solid #30363d;
+      color: #c9d1d9; border-radius: 4px;
+      padding: 3px 5px; font-size: 11px;
+      flex-shrink: 0;
+    }
+    .range-row .range-label-input {
+      flex: 1; min-width: 0;
+      background: #161b22; border: 1px solid #30363d;
+      color: #c9d1d9; border-radius: 4px;
+      padding: 3px 5px; font-size: 11px;
+    }
+    .range-sep { font-size: 11px; color: #484f58; flex-shrink: 0; }
+    .del-btn {
+      background: none; border: none;
+      color: #6e7681; cursor: pointer;
+      font-size: 16px; line-height: 1;
+      padding: 0 2px; flex-shrink: 0;
+      transition: color 0.15s;
+    }
+    .del-btn:hover { color: #f85149; }
+
+    /* buttons */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      border-radius: 6px; border: none;
+      font-size: 12px; font-weight: 500;
+      padding: 6px 12px;
+      cursor: pointer;
+      transition: opacity 0.15s, background 0.15s;
+      white-space: nowrap;
+    }
+    .btn:active { opacity: 0.75; }
+    .btn-primary { background: #238636; color: #fff; }
+    .btn-primary:hover { background: #2ea043; }
+    .btn-secondary { background: #21262d; color: #c9d1d9; border: 1px solid #30363d; }
+    .btn-secondary:hover { background: #30363d; }
+    .btn-blue { background: #1f6feb; color: #fff; }
+    .btn-blue:hover { background: #388bfd; }
+    .btn-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+
+    /* ── Modal ── */
+    .modal-bg {
+      position: fixed; inset: 0;
+      background: rgba(1, 4, 9, 0.75);
+      z-index: 1000;
+      display: flex; align-items: center; justify-content: center;
+      backdrop-filter: blur(2px);
+    }
+    .modal {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      width: 520px;
+      max-height: 82vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+    }
+    .modal-head {
+      padding: 20px 24px 14px;
+      border-bottom: 1px solid #21262d;
+      flex-shrink: 0;
+    }
+    .modal-head h2 { font-size: 16px; font-weight: 600; color: #e6edf3; }
+    .modal-head p { font-size: 12px; color: #8b949e; margin-top: 4px; line-height: 1.5; }
+
+    .modal-body { flex: 1; overflow-y: auto; padding: 14px 24px; }
+
+    .modal-foot {
+      padding: 14px 24px;
+      border-top: 1px solid #21262d;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    /* column search */
+    .col-search {
+      width: 100%;
+      background: #0d1117; border: 1px solid #30363d;
+      color: #c9d1d9; border-radius: 6px;
+      padding: 7px 12px; font-size: 13px;
+      outline: none; margin-bottom: 10px;
+      transition: border-color 0.15s;
+    }
+    .col-search:focus { border-color: #58a6ff; }
+
+    /* column list */
+    .col-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 7px 10px; border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.1s;
+      border: 1px solid transparent;
+    }
+    .col-item:hover { background: #21262d; }
+    .col-item.sel { background: rgba(31,111,235,0.15); border-color: #1f6feb; }
+    .col-item input[type="radio"] { accent-color: #58a6ff; flex-shrink: 0; }
+    .col-name { font-size: 13px; font-weight: 500; color: #e6edf3; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .col-meta { font-size: 11px; color: #484f58; white-space: nowrap; }
+    .col-badge {
+      font-size: 10px; padding: 1px 6px; border-radius: 10px;
+      background: #21262d; color: #8b949e; white-space: nowrap;
+    }
+    .col-badge.numeric { background: rgba(63,185,80,0.15); color: #3fb950; }
+
+    /* ── Legend (Leaflet control) ── */
+    .legend-box {
+      background: rgba(22, 27, 34, 0.93);
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 10px 12px;
+      min-width: 150px;
+      max-width: 200px;
+      backdrop-filter: blur(4px);
+    }
+    .legend-box h4 {
+      font-size: 11px; font-weight: 600;
+      color: #58a6ff; text-transform: uppercase;
+      letter-spacing: 0.4px; margin-bottom: 8px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .legend-entry {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 11px; color: #c9d1d9;
+      margin-bottom: 4px;
+    }
+    .legend-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%; flex-shrink: 0;
+    }
+
+    /* scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>📡 Walk Test Map Analyzer</h1>
+  <span id="header-file"></span>
+  <span id="header-status"></span>
+</header>
+
+<div class="app-body">
+
+  <!-- Upload Screen -->
+  <div id="upload-screen">
+    <div class="upload-card" id="drop-zone">
+      <div class="upload-icon">📂</div>
+      <h2>Upload Walk Test CSV</h2>
+      <p>Drag &amp; drop your CSV file here<br>or click to browse</p>
+      <div class="upload-hint">Expects LATITUDE and LONGITUDE columns for map positioning.<br>Any numeric column can be used for colour-coding.</div>
+    </div>
+    <input type="file" id="file-input" accept=".csv,.txt">
+  </div>
+
+  <!-- Map -->
+  <div id="map"></div>
+
+  <!-- Sidebar -->
+  <div id="sidebar">
+
+    <div class="sb-section">
+      <div class="sb-title">File</div>
+      <div id="file-info" class="info-pill"></div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="uploadNew()">New File</button>
+      </div>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-title">Data Column</div>
+      <div id="col-info" class="info-pill"></div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="openModal(false)">Change Column</button>
+      </div>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-title">Statistics</div>
+      <div id="stats-grid" class="stats-grid"></div>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-title">Colour Ranges</div>
+      <div id="ranges-wrap"></div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="addRange()">+ Add</button>
+        <button class="btn btn-secondary" onclick="autoSplit()">Auto Split</button>
+        <button class="btn btn-primary" onclick="readAndPlot()">Apply</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Column Selection Modal -->
+<div class="modal-bg" id="modal" style="display:none;">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>Select Data Column</h2>
+      <p>Choose a numeric column from your CSV. Points on the map will be coloured according to values in this column.</p>
+    </div>
+    <div class="modal-body">
+      <input class="col-search" id="col-search" type="text" placeholder="Search columns…" oninput="filterCols()">
+      <div id="col-list"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" id="modal-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-blue" onclick="confirmCol()">Analyse &amp; Plot →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════
+//  State
+// ════════════════════════════════════════════════
+let rows = [];
+let headers = [];
+let latCol = 'LATITUDE';
+let lonCol = 'LONGITUDE';
+let activeCol = null;
+let colorRanges = [];
+let map = null;
+let markersLayer = null;
+let legendCtrl = null;
+
+const PALETTE = ['#3fb950','#d29922','#f0883e','#f85149','#58a6ff','#a371f7'];
+
+// ════════════════════════════════════════════════
+//  Map init
+// ════════════════════════════════════════════════
+function initMap() {
+  map = L.map('map', { preferCanvas: true });
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19
+  }).addTo(map);
+  markersLayer = L.layerGroup().addTo(map);
+  map.setView([1.3521, 103.8198], 13); // Singapore default
+}
+
+// ════════════════════════════════════════════════
+//  Upload handling
+// ════════════════════════════════════════════════
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', () => { if (fileInput.files[0]) handleFile(fileInput.files[0]); });
+
+function handleFile(file) {
+  document.getElementById('header-file').textContent = 'Parsing…';
+  Papa.parse(file, {
+    header: true,
+    skipEmptyLines: true,
+    complete(result) {
+      rows = result.data;
+      headers = result.meta.fields || [];
+
+      // Auto-detect lat/lon columns
+      latCol = detectCol(headers, ['latitude', 'lat']) || 'LATITUDE';
+      lonCol = detectCol(headers, ['longitude', 'lon', 'long', 'lng']) || 'LONGITUDE';
+
+      // UI
+      document.getElementById('header-file').textContent = `${file.name}`;
+      document.getElementById('header-status').textContent = `${rows.length.toLocaleString()} rows`;
+      document.getElementById('file-info').innerHTML =
+        `<span class="hl">${rows.length.toLocaleString()}</span> rows &nbsp;·&nbsp; ` +
+        `<span class="hl">${headers.length}</span> columns<br>` +
+        `Lat: <span class="hl">${latCol}</span> &nbsp; Lon: <span class="hl">${lonCol}</span>`;
+
+      document.getElementById('upload-screen').style.display = 'none';
+      document.getElementById('sidebar').classList.add('open');
+
+      if (!map) initMap();
+      openModal(true);
+    },
+    error(err) { alert('Error parsing CSV: ' + err.message); }
+  });
+}
+
+function detectCol(cols, candidates) {
+  for (const c of candidates) {
+    const found = cols.find(h => h.toLowerCase() === c);
+    if (found) return found;
+  }
+  for (const c of candidates) {
+    const found = cols.find(h => h.toLowerCase().includes(c));
+    if (found) return found;
+  }
+  return null;
+}
+
+// ════════════════════════════════════════════════
+//  Modal
+// ════════════════════════════════════════════════
+let colItemEls = [];
+
+function openModal(firstTime = false) {
+  if (!headers.length) return;
+  document.getElementById('modal-cancel').style.visibility = firstTime ? 'hidden' : 'visible';
+  document.getElementById('col-search').value = '';
+
+  const list = document.getElementById('col-list');
+  list.innerHTML = '';
+  colItemEls = [];
+
+  const skip = new Set([latCol, lonCol]);
+
+  headers.forEach(col => {
+    if (skip.has(col)) return;
+    const stats = quickStats(col);
+    const isNum = stats !== null;
+
+    const el = document.createElement('div');
+    el.className = 'col-item' + (col === activeCol ? ' sel' : '');
+    el.dataset.col = col;
+
+    const badge = isNum
+      ? `<span class="col-badge numeric">${fmtN(stats.min)} … ${fmtN(stats.max)}</span>`
+      : `<span class="col-badge">text</span>`;
+
+    el.innerHTML = `
+      <input type="radio" name="colr" value="${escAttr(col)}" ${col === activeCol ? 'checked' : ''}>
+      <span class="col-name" title="${escHtml(col)}">${escHtml(col)}</span>
+      ${badge}
+    `;
+    el.addEventListener('click', () => {
+      colItemEls.forEach(e => e.classList.remove('sel'));
+      el.classList.add('sel');
+      el.querySelector('input').checked = true;
+    });
+    list.appendChild(el);
+    colItemEls.push(el);
+  });
+
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function filterCols() {
+  const q = document.getElementById('col-search').value.toLowerCase();
+  colItemEls.forEach(el => {
+    el.style.display = el.dataset.col.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+function closeModal() {
+  document.getElementById('modal').style.display = 'none';
+}
+
+function confirmCol() {
+  const checked = document.querySelector('input[name="colr"]:checked');
+  if (!checked) { alert('Please select a column.'); return; }
+  activeCol = checked.value;
+  closeModal();
+  analyseAndPlot();
+}
+
+// ════════════════════════════════════════════════
+//  Analysis
+// ════════════════════════════════════════════════
+function quickStats(col) {
+  const vals = rows.map(r => parseFloat(r[col])).filter(v => !isNaN(v));
+  if (!vals.length) return null;
+  const mn = Math.min(...vals), mx = Math.max(...vals);
+  return { min: mn, max: mx };
+}
+
+function fullStats(col) {
+  const vals = rows.map(r => parseFloat(r[col])).filter(v => !isNaN(v));
+  if (!vals.length) return null;
+  vals.sort((a, b) => a - b);
+  const n = vals.length;
+  const sum = vals.reduce((a, b) => a + b, 0);
+  const pct = p => vals[Math.min(Math.floor(n * p / 100), n - 1)];
+  return {
+    count: n,
+    min: vals[0], max: vals[n - 1],
+    mean: sum / n,
+    median: pct(50),
+    p10: pct(10), p25: pct(25), p75: pct(75), p90: pct(90),
+  };
+}
+
+function analyseAndPlot() {
+  const stats = fullStats(activeCol);
+  if (!stats) { alert('No numeric data found in column: ' + activeCol); return; }
+
+  // Column info
+  document.getElementById('col-info').innerHTML =
+    `<span class="hl">${escHtml(activeCol)}</span><br>` +
+    `<span class="hl">${stats.count.toLocaleString()}</span> numeric values`;
+
+  // Stats
+  document.getElementById('stats-grid').innerHTML = [
+    ['Min',    fmtN(stats.min)],
+    ['Max',    fmtN(stats.max)],
+    ['Mean',   fmtN(stats.mean)],
+    ['Median', fmtN(stats.median)],
+    ['10th %', fmtN(stats.p10)],
+    ['25th %', fmtN(stats.p25)],
+    ['75th %', fmtN(stats.p75)],
+    ['90th %', fmtN(stats.p90)],
+  ].map(([l, v]) => `
+    <div class="stat-cell">
+      <div class="slabel">${l}</div>
+      <div class="svalue">${v}</div>
+    </div>`).join('');
+
+  // Build default ranges (4 equal bands, descending = best colour first)
+  buildDefaultRanges(stats);
+
+  // Plot
+  plotPoints();
+}
+
+// ════════════════════════════════════════════════
+//  Colour Ranges
+// ════════════════════════════════════════════════
+function buildDefaultRanges(stats) {
+  const { min, max } = stats;
+  const step = (max - min) / 4;
+  colorRanges = [
+    { min: roundTo(min + step * 3, 4), max: max,                  color: '#3fb950', label: 'Excellent' },
+    { min: roundTo(min + step * 2, 4), max: roundTo(min + step * 3, 4), color: '#d29922', label: 'Good'      },
+    { min: roundTo(min + step,     4), max: roundTo(min + step * 2, 4), color: '#f0883e', label: 'Fair'      },
+    { min: min,                        max: roundTo(min + step,     4), color: '#f85149', label: 'Poor'      },
+  ];
+  renderRanges();
+}
+
+function autoSplit() {
+  const stats = fullStats(activeCol);
+  if (!stats) return;
+  buildDefaultRanges(stats);
+}
+
+function renderRanges() {
+  const wrap = document.getElementById('ranges-wrap');
+  wrap.innerHTML = '';
+  colorRanges.forEach((r, i) => {
+    const row = document.createElement('div');
+    row.className = 'range-row';
+    row.innerHTML = `
+      <input type="color" value="${r.color}">
+      <input type="number" value="${fmtN(r.min)}" step="any" placeholder="Min">
+      <span class="range-sep">–</span>
+      <input type="number" value="${fmtN(r.max)}" step="any" placeholder="Max">
+      <input type="text" class="range-label-input" value="${escHtml(r.label)}" placeholder="Label">
+      <button class="del-btn" title="Remove">×</button>
+    `;
+    row.querySelector('.del-btn').addEventListener('click', () => {
+      colorRanges.splice(i, 1);
+      renderRanges();
+    });
+    wrap.appendChild(row);
+  });
+}
+
+function addRange() {
+  const stats = quickStats(activeCol);
+  const mid = stats ? (stats.min + stats.max) / 2 : 0;
+  colorRanges.push({
+    min: mid, max: mid + 10,
+    color: PALETTE[colorRanges.length % PALETTE.length],
+    label: 'Range ' + (colorRanges.length + 1)
+  });
+  renderRanges();
+}
+
+function readRanges() {
+  const rows_ = document.querySelectorAll('.range-row');
+  colorRanges = Array.from(rows_).map(row => {
+    const inputs = row.querySelectorAll('input');
+    return {
+      color: inputs[0].value,
+      min:   parseFloat(inputs[1].value),
+      max:   parseFloat(inputs[2].value),
+      label: inputs[3].value,
+    };
+  });
+}
+
+function readAndPlot() {
+  readRanges();
+  plotPoints();
+}
+
+function getColor(val) {
+  if (isNaN(val)) return '#484f58';
+  for (const r of colorRanges) {
+    if (!isNaN(r.min) && !isNaN(r.max) && val >= r.min && val <= r.max) return r.color;
+  }
+  return '#484f58';
+}
+
+// ════════════════════════════════════════════════
+//  Plotting
+// ════════════════════════════════════════════════
+function plotPoints() {
+  if (!map) return;
+  readRanges();
+  markersLayer.clearLayers();
+
+  const bounds = [];
+  let plotted = 0, skipped = 0;
+
+  rows.forEach(row => {
+    const lat = parseFloat(row[latCol]);
+    const lon = parseFloat(row[lonCol]);
+    if (isNaN(lat) || isNaN(lon) || (lat === 0 && lon === 0)) { skipped++; return; }
+
+    const val = parseFloat(row[activeCol]);
+    const col = getColor(val);
+
+    const marker = L.circleMarker([lat, lon], {
+      radius: 5,
+      fillColor: col,
+      color: 'rgba(0,0,0,0.25)',
+      weight: 0.8,
+      fillOpacity: 0.88,
+    });
+
+    // Build popup content
+    const time = row['TIME'] || row['time'] || '';
+    const dispVal = isNaN(val) ? 'N/A' : fmtN(val);
+    marker.bindPopup(
+      `<b>${escHtml(activeCol)}</b>: ${dispVal}<br>` +
+      `<small>Lat: ${lat.toFixed(6)}, Lon: ${lon.toFixed(6)}</small>` +
+      (time ? `<br><small>${escHtml(time)}</small>` : '')
+    );
+
+    markersLayer.addLayer(marker);
+    bounds.push([lat, lon]);
+    plotted++;
+  });
+
+  if (bounds.length) map.fitBounds(bounds, { padding: [30, 30] });
+
+  document.getElementById('header-status').textContent =
+    `${plotted.toLocaleString()} plotted · ${skipped} skipped`;
+
+  updateLegend();
+}
+
+function updateLegend() {
+  if (legendCtrl) legendCtrl.remove();
+  legendCtrl = L.control({ position: 'bottomright' });
+  legendCtrl.onAdd = () => {
+    const div = L.DomUtil.create('div', 'legend-box');
+    div.innerHTML = `<h4>${escHtml(activeCol)}</h4>`;
+    colorRanges.forEach(r => {
+      div.innerHTML +=
+        `<div class="legend-entry">` +
+        `<div class="legend-dot" style="background:${r.color}"></div>` +
+        `<span>${escHtml(r.label)} (${fmtN(r.min)}–${fmtN(r.max)})</span>` +
+        `</div>`;
+    });
+    div.innerHTML +=
+      `<div class="legend-entry">` +
+      `<div class="legend-dot" style="background:#484f58"></div>` +
+      `<span>No data / out of range</span>` +
+      `</div>`;
+    return div;
+  };
+  legendCtrl.addTo(map);
+}
+
+// ════════════════════════════════════════════════
+//  Actions
+// ════════════════════════════════════════════════
+function uploadNew() {
+  if (!confirm('Load a new file? Current data will be cleared.')) return;
+  rows = []; headers = []; activeCol = null; colorRanges = [];
+  markersLayer && markersLayer.clearLayers();
+  legendCtrl && legendCtrl.remove();
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('upload-screen').style.display = 'flex';
+  document.getElementById('header-file').textContent = '';
+  document.getElementById('header-status').textContent = '';
+  fileInput.value = '';
+}
+
+// ════════════════════════════════════════════════
+//  Helpers
+// ════════════════════════════════════════════════
+function fmtN(v) {
+  if (v === undefined || v === null || (typeof v === 'number' && isNaN(v))) return '—';
+  const n = Number(v);
+  if (isNaN(n)) return String(v);
+  if (Number.isInteger(n)) return n.toLocaleString();
+  return n.toFixed(2);
+}
+
+function roundTo(v, dp) {
+  const f = Math.pow(10, dp);
+  return Math.round(v * f) / f;
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function escAttr(s) {
+  return String(s).replace(/"/g, '&quot;');
+}
+
+// ════════════════════════════════════════════════
+//  Boot
+// ════════════════════════════════════════════════
+initMap();
+</script>
+</body>
+</html>
